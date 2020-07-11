@@ -2,29 +2,36 @@ package com.mfo.creditservice.controllers;
 
 import com.mfo.creditservice.domains.Request;
 import com.mfo.creditservice.domains.User;
+import com.mfo.creditservice.payloads.CreateRequestRequest;
 import com.mfo.creditservice.payloads.PaginatedResponsePayload;
+import com.mfo.creditservice.payloads.ResponsePayload;
 import com.mfo.creditservice.services.RequestService;
+import com.mfo.creditservice.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/request")
 public class RequestController {
 
     private RequestService requestService;
+    private UserService userService;
 
     @Autowired
     public void setRequestService(RequestService requestService) {
         this.requestService = requestService;
+    }
+
+    @Autowired
+    public void setUserService(UserService userService) {
+        this.userService = userService;
     }
 
     private Pageable preparePageable(HttpServletRequest request) {
@@ -73,6 +80,24 @@ public class RequestController {
                 pageable.getPageSize(),
                 requestPage.getTotalElements()
         );
+        return ResponseEntity.ok(payload);
+    }
+
+    @PostMapping
+    public ResponseEntity<ResponsePayload<Request>> create(
+            @RequestBody CreateRequestRequest createRequestRequest
+    ) {
+        ResponsePayload<Request> payload = new ResponsePayload<>();
+        Optional<User> optionalUser = userService.findById(createRequestRequest.getUserId());
+        if (!optionalUser.isPresent()) {
+            payload.setErrorPayload("Пользователь не найден");
+            return ResponseEntity.ok(payload);
+        }
+        Request requestRequest = new Request();
+        requestRequest.setSum(createRequestRequest.getSum());
+        requestRequest.setUser(optionalUser.get());
+        Request createdRequest = requestService.create(requestRequest);
+        payload.setDataPayload(createdRequest);
         return ResponseEntity.ok(payload);
     }
 }

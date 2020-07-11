@@ -25,4 +25,9 @@ public class RequestService {
     public Page<Request> findAcceptedByUser(User user, Pageable page) {
         return this.requestRepository.findByAcceptedTrueAndUser(user, page);
     }
+
+    public Request create(Request request) {
+        // @TO-DO: Проверка завки
+        return this.requestRepository.save(request);
+    }
 }
