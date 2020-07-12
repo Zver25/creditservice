@@ -10,6 +10,7 @@ public class User {
     private Long id;
     private String firstName;
     private String lastName;
+    private boolean isDisabled;
     @ManyToOne(fetch = FetchType.LAZY)
     private Country country;
 
@@ -19,6 +20,14 @@ public class User {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public boolean isDisabled() {
+        return isDisabled;
+    }
+
+    public void setDisabled(boolean disabled) {
+        isDisabled = disabled;
     }
 
     public String getFirstName() {
